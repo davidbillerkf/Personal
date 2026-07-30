@@ -129,25 +129,31 @@ def build_vendors(wb):
     ws.sheet_view.showGridLines = False
     ws.column_dimensions["A"].width = 12
     ws.column_dimensions["B"].width = 26
-    ws.column_dimensions["C"].width = 18
+    ws.column_dimensions["C"].width = 20
     ws.column_dimensions["D"].width = 15
-    ws.column_dimensions["E"].width = 13
+    ws.column_dimensions["E"].width = 15
+    ws.column_dimensions["F"].width = 13
 
-    r = style_section_header(ws, 4, 1, "Dim_Vendor  —  add a row here to make a new vendor available in Expenses", span=5)
-    ven_info = add_table(ws, r, 1, ["VendorID", "VendorName", "DefaultCategoryID", "CurMonthSpend", "YTDSpend"],
-                          "Dim_Vendor", [list(v) + [None, None] for v in sd.VENDORS],
-                          col_widths=[12, 26, 18, 15, 13])
+    r = style_section_header(ws, 4, 1,
+        "Dim_Vendor  —  add a row to make a new vendor available in Expenses; set/edit DefaultCategory (dropdown) so Bank Import can auto-suggest a category",
+        span=6)
+    ven_info = add_table(ws, r, 1, ["VendorID", "VendorName", "DefaultCategory", "DefaultCategoryID", "CurMonthSpend", "YTDSpend"],
+                          "Dim_Vendor", [[vid, name, cat, None, None, None] for (vid, name, cat) in sd.VENDORS],
+                          col_widths=[12, 26, 20, 15, 15, 13])
     fr, lr = ven_info["first_data_row"], ven_info["end_row"]
     for rr in range(fr, lr + 1):
         ws.cell(row=rr, column=4,
+                value=f'=IFERROR(INDEX(Dim_Category[CategoryID],MATCH($C{rr},Dim_Category[CategoryName],0)),"")')
+        ws.cell(row=rr, column=5,
                 value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
                        f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
-        ws.cell(row=rr, column=4).number_format = CUR_FMT
-        ws.cell(row=rr, column=5,
+        ws.cell(row=rr, column=5).number_format = CUR_FMT
+        ws.cell(row=rr, column=6,
                 value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurYearStart,Fact_Expenses[Date],"<="&CurYearEnd)'
                        f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurYearStart,BankImportRaw[Date],"<="&CurYearEnd)'))
-        ws.cell(row=rr, column=5).number_format = CUR_FMT
-    ws.column_dimensions["C"].hidden = True
+        ws.cell(row=rr, column=6).number_format = CUR_FMT
+    add_list_validation(ws, f"C{fr}:C{lr+50}", "=CategoryNameList")
+    ws.column_dimensions["D"].hidden = True
     wb.defined_names["VendorNameList"] = DefinedName(
         "VendorNameList", attr_text="Dim_Vendor[VendorName]")
     ws.sheet_properties.tabColor = "6B7280"

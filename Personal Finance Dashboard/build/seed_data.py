@@ -49,11 +49,9 @@ CATEGORIES = [
     (27, "Payroll Cash RB", "Income", "No"),
     (28, "Payroll Direct RB", "Income", "No"),
 ]
-_CAT_ID = {name: cid for (cid, name, _typ, _ess) in CATEGORIES}
-
 # ---------------- Dim_Vendor ----------------
-# VendorID, VendorName, DefaultCategoryID
-# DefaultCategoryID is None where nothing in the category list above is a confident fit
+# VendorID, VendorName, DefaultCategory (a category name, editable on the Vendors tab)
+# DefaultCategory is None where nothing in the category list above is a confident fit
 # (mainly: schools/yeshivas, shuls/congregations, tzedakah & charity organizations, bank
 # fees/interest line items, home repair, and Zelle transfers — none of these have a matching
 # category yet). Those vendors still work everywhere; they just won't auto-suggest a category
@@ -213,10 +211,7 @@ _VENDOR_DEFS = [
     ("Payroll Cash RB", "Payroll Cash RB"),
     ("Payroll Direct RB", "Payroll Direct RB"),
 ]
-VENDORS = [
-    (i + 1, name, (_CAT_ID[cat] if cat else None))
-    for i, (name, cat) in enumerate(_VENDOR_DEFS)
-]
+VENDORS = [(i + 1, name, cat) for i, (name, cat) in enumerate(_VENDOR_DEFS)]
 
 # ---------------- Dim_Account ----------------
 # AccountID, AccountName, AccountType, Balance

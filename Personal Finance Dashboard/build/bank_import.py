@@ -100,9 +100,7 @@ def build_bank_import(wb):
                            f'IFERROR(INDEX($D${fr}:$D${rr-1},MATCH($B{rr},$B${fr}:$B${rr-1},0)),""))'))
         # Category auto-suggested from the picked Vendor's default category (plain, non-array INDEX/MATCH)
         ws.cell(row=rr, column=5,
-                value=(f'=IFERROR(INDEX(Dim_Category[CategoryName],MATCH('
-                       f'INDEX(Dim_Vendor[DefaultCategoryID],MATCH($D{rr},Dim_Vendor[VendorName],0)),'
-                       f'Dim_Category[CategoryID],0)),"")'))
+                value=f'=IFERROR(INDEX(Dim_Vendor[DefaultCategory],MATCH($D{rr},Dim_Vendor[VendorName],0)),"")')
         ws.cell(row=rr, column=8,
                 value=(f'=IF($C{rr}="","",'
                        f'IF(SignConvention="Negative = Expense",IF($C{rr}<0,"Expense","Income"),'

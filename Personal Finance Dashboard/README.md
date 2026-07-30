@@ -100,6 +100,14 @@ text — so every report stays consistent.
 - **New vendor**: add a row to `Dim_Vendor` on **Vendors**, with its default category.
 - **New account**: add a row to `Dim_Account` on **Accounts**, with its starting Balance.
 
+### Editing a vendor's default category
+
+On the **Vendors** tab, `Dim_Vendor` has a **DefaultCategory** column (column C) — a plain
+dropdown of category names, right next to the vendor. Set or change it there for any vendor;
+that's what Bank Import (and Expenses, if you fill Vendor in first) use to auto-suggest a
+category. There's also a hidden `DefaultCategoryID` column right after it — that's just an
+internal lookup the formulas use, not something you need to touch.
+
 All dropdowns use Excel structured references (`=Dim_Category[CategoryName]`, etc.), which
 automatically grow to include new rows — not a fixed cell range — so nothing else needs to be
 touched.
