@@ -140,10 +140,12 @@ def build_vendors(wb):
     fr, lr = ven_info["first_data_row"], ven_info["end_row"]
     for rr in range(fr, lr + 1):
         ws.cell(row=rr, column=4,
-                value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)')
+                value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
         ws.cell(row=rr, column=4).number_format = CUR_FMT
         ws.cell(row=rr, column=5,
-                value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurYearStart,Fact_Expenses[Date],"<="&CurYearEnd)')
+                value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurYearStart,Fact_Expenses[Date],"<="&CurYearEnd)'
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurYearStart,BankImportRaw[Date],"<="&CurYearEnd)'))
         ws.cell(row=rr, column=5).number_format = CUR_FMT
     ws.column_dimensions["C"].hidden = True
     wb.defined_names["VendorNameList"] = DefinedName(

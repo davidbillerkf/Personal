@@ -22,9 +22,11 @@ def build_chartdata(wb):
         ws.cell(row=rr, column=2).number_format = DATE_FMT
         start_expr = f"EOMONTH(A{rr},-1)+1"
         ws.cell(row=rr, column=3,
-                value=f'=SUMIFS(Fact_Income[NetAmount],Fact_Income[Date],">="&{start_expr},Fact_Income[Date],"<="&B{rr})')
+                value=(f'=SUMIFS(Fact_Income[NetAmount],Fact_Income[Date],">="&{start_expr},Fact_Income[Date],"<="&B{rr})'
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[TransactionType],"Income",BankImportRaw[Date],">="&{start_expr},BankImportRaw[Date],"<="&B{rr})'))
         ws.cell(row=rr, column=4,
-                value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[Date],">="&{start_expr},Fact_Expenses[Date],"<="&B{rr})')
+                value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[Date],">="&{start_expr},Fact_Expenses[Date],"<="&B{rr})'
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&{start_expr},BankImportRaw[Date],"<="&B{rr})'))
         ws.cell(row=rr, column=5, value=f"=C{rr}-D{rr}")
         ws.cell(row=rr, column=6, value=f"=SUM($E$2:E{rr})")
         for c in (3, 4, 5, 6):
@@ -48,8 +50,14 @@ def build_dashboard(wb, ctx):
 
     # ---------------- KPI CARDS (8) ----------------
     kpis = [
-        ("Monthly Income", '=SUMIFS(Fact_Income[NetAmount],Fact_Income[Date],">="&CurMonthStart,Fact_Income[Date],"<="&CurMonthEnd)', CUR_FMT0, GREEN),
-        ("Monthly Expenses", '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)', CUR_FMT0, RED),
+        ("Monthly Income",
+         '=SUMIFS(Fact_Income[NetAmount],Fact_Income[Date],">="&CurMonthStart,Fact_Income[Date],"<="&CurMonthEnd)'
+         '+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[TransactionType],"Income",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)',
+         CUR_FMT0, GREEN),
+        ("Monthly Expenses",
+         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
+         '+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)',
+         CUR_FMT0, RED),
         ("Monthly Savings", "=A6-E6", CUR_FMT0, DARK_TEXT),
         ("Savings Rate %", "=IFERROR(I6/A6,0)", PCT_FMT, DARK_TEXT),
         ("Net Cash Flow", '=I6-SUMIFS(Fact_SavingsTransfers[Amount],Fact_SavingsTransfers[Date],">="&CurMonthStart,Fact_SavingsTransfers[Date],"<="&CurMonthEnd)', CUR_FMT0, DARK_TEXT),
@@ -136,7 +144,7 @@ def build_dashboard(wb, ctx):
 
     wr = widget_row + 1
     # -- Top Expenses (this month) --
-    ws.cell(row=wr, column=1, value="Top Expenses (This Month)").font = f(10, bold=True)
+    ws.cell(row=wr, column=1, value="Top Expenses (This Month, Expenses tab only)").font = f(10, bold=True)
     for j, h in enumerate(["Vendor", "Category", "Amount"]):
         ws.cell(row=wr + 1, column=1 + j, value=h).font = f(9, bold=True, color=WHITE)
         ws.cell(row=wr + 1, column=1 + j).fill = fill(NAVY)
@@ -182,8 +190,13 @@ def build_dashboard(wb, ctx):
     # -- Behavior Metrics --
     ws.cell(row=wr, column=11, value="Behavior Metrics").font = f(10, bold=True)
     metrics = [
-        ("Need vs Want %", '=IFERROR(SUMIFS(Fact_Expenses[Amount],Fact_Expenses[NeedWantFlag],"Need")/SUM(Fact_Expenses[Amount]),0)', PCT_FMT),
-        ("Recurring Spend / mo", '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[RecurringFlag],"Yes",Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)', CUR_FMT),
+        ("Need vs Want %",
+         '=IFERROR((SUMIFS(Fact_Expenses[Amount],Fact_Expenses[NeedWantFlag],"Need")+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[NeedWantFlag],"Need",BankImportRaw[TransactionType],"Expense"))'
+         '/(SUM(Fact_Expenses[Amount])+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[TransactionType],"Expense")),0)',
+         PCT_FMT),
+        ("Recurring Spend / mo (manual entries only)",
+         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[RecurringFlag],"Yes",Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)',
+         CUR_FMT),
     ]
     for i, (label, formula, fmt) in enumerate(metrics):
         rr = wr + 2 + i
@@ -208,7 +221,7 @@ def build_dashboard(wb, ctx):
     ws.conditional_formatting.add(f"B{wr2+2}:B{wr2+1+n_cat}", CellIsRule(operator="equal", formula=['"Under Budget"'], fill=fill(GREEN_LIGHT), font=Font(color=GREEN)))
 
     # -- Recent Transactions (last 8 rows entered) --
-    ws.cell(row=wr2, column=4, value="Recent Transactions").font = f(10, bold=True)
+    ws.cell(row=wr2, column=4, value="Recent Transactions (Expenses tab only)").font = f(10, bold=True)
     for j, h in enumerate(["Date", "Vendor", "Category", "Amount"]):
         ws.cell(row=wr2 + 1, column=4 + j, value=h).font = f(9, bold=True, color=WHITE)
         ws.cell(row=wr2 + 1, column=4 + j).fill = fill(NAVY)
@@ -230,15 +243,16 @@ def build_dashboard(wb, ctx):
     for j, h in enumerate(["Category", "Monthly Cost", "Annual Cost", "Potential Savings", "Priority", "Recommendation"]):
         ws.cell(row=cba_row, column=1 + j, value=h).font = f(9, bold=True, color=WHITE)
         ws.cell(row=cba_row, column=1 + j).fill = fill(NAVY)
+    def cba_category_formula(cat):
+        return (f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],"{cat}",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'
+                f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],"{cat}",BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&EOMONTH(TodayDate,-2)+1,BankImportRaw[Date],"<="&EOMONTH(TodayDate,-1))')
     cba_defs = [
-        ("Dining & Entertainment",
-         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],"Dining & Entertainment",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'),
-        ("Shopping",
-         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],"Shopping",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'),
-        ("Personal Care",
-         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],"Personal Care",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'),
+        ("Dining & Entertainment", cba_category_formula("Dining & Entertainment")),
+        ("Shopping", cba_category_formula("Shopping")),
+        ("Personal Care", cba_category_formula("Personal Care")),
         ("Non-Essential Wants (all categories)",
-         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[NeedWantFlag],"Want",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'),
+         '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[NeedWantFlag],"Want",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'
+         '+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[NeedWantFlag],"Want",BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&EOMONTH(TodayDate,-2)+1,BankImportRaw[Date],"<="&EOMONTH(TodayDate,-1))'),
     ]
     cba_first = cba_row + 1
     for i, (label, formula) in enumerate(cba_defs):

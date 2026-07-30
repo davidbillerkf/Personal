@@ -2,6 +2,33 @@
 
 All notable changes to the Personal Finance Planner are documented here.
 
+## [2.1.0] - 2026-07-30
+
+### Changed — Bank Import now feeds every report directly, no copy step
+Previously, Bank Import was a scratch/staging table: you'd paste a CSV, categorize it, then
+manually copy the finished rows into Expenses/Income and clear the staging rows. That meant
+nothing you pasted into Bank Import ever showed up on the Dashboard until you did that copy —
+confusing, and not what "import" implies. Bank Import is now a **permanent ledger** for
+bank-derived transactions, on equal footing with Expenses/Income for manually entered ones:
+
+- Every total that previously read only `Fact_Expenses`/`Fact_Income` now also sums matching
+  `BankImportRaw` rows (filtered by `TransactionType`): Dashboard's Monthly Income/Expenses KPIs,
+  the 13-month `ChartData` trend (feeds the Income vs Expenses and Spending Trend charts),
+  `Budget`'s Actual/Status/Remaining per category (feeds the Spending Breakdown pie, Budget
+  Performance chart, and Budget Status widget), `Dim_Vendor`'s CurMonthSpend/YTDSpend (feeds the
+  Largest Vendors widget), Need vs Want %, and the Cut-Back Analyzer's four category rows.
+- Rows are no longer copied elsewhere or deleted after import — deleting a Bank Import row now
+  removes that transaction from every report, the same as deleting a row from Expenses would.
+- The Vendor auto-fill ("remembers" a description from a past import) no longer depends on
+  Description history copied into Fact_Expenses/Fact_Income (that copy step no longer exists).
+  It now looks at earlier rows within Bank Import itself, using a range that only ever includes
+  prior rows (never the current row) to avoid a circular reference.
+- **Known scope limit, documented in-sheet and in the README**: the Dashboard's "Top Expenses"
+  and "Recent Transactions" widgets still only read `Fact_Expenses` — ranking individual
+  transactions across two separate tables without dynamic-array formulas is fragile to get right
+  without a live Excel to verify against, so this was intentionally left out rather than shipped
+  half-working.
+
 ## [2.0.1] - 2026-07-30
 
 ### Fixed

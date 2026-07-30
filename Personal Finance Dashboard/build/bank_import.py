@@ -1,6 +1,8 @@
-"""Bank Import sheet — paste a bank/credit-card CSV export and get it cleaned,
-categorized (via your Vendor list), and split into Expense/Income, ready to copy
-into the Expenses / Income tabs. No Power Query setup required to use this."""
+"""Bank Import sheet — paste a bank/credit-card CSV export and it's cleaned, categorized
+(via your Vendor list), split into Expense/Income, and counted directly in every KPI, chart,
+Budget line, and Vendor total on the Dashboard. This is a permanent ledger for bank-derived
+transactions (like Expenses/Income are for manually entered ones) — rows are never copied
+elsewhere or deleted. No Power Query setup required to use this."""
 from openpyxl.workbook.defined_name import DefinedName
 from common import *
 
@@ -19,20 +21,23 @@ def build_bank_import(wb):
         "HOW TO USE THIS TAB",
         "1. Export a CSV of transactions from your bank or credit card's website (usually Accounts > Download/Export).",
         "2. Open that CSV, copy its Date / Description / Amount columns, and paste them into columns A, B, C of the"
-        " table below (the first blank row right under the header row) — paste values only (Home > Paste > Values)"
+        " table below — into the first blank row, not over existing rows — paste values only (Home > Paste > Values)"
         " so formatting doesn't fight the table.",
         "3. Set 'Sign Convention' below to match how your export shows amounts (see the dropdown note).",
-        "4. Column D (Vendor) tries to auto-fill itself from any past import where you picked a vendor for that"
-        " exact same bank description — if it's blank (new or slightly different wording), pick a Vendor from the"
-        " dropdown. Category (E) then auto-fills from that vendor's default category; override it if needed.",
-        "5. Column H tells you Expense or Income and column I gives the positive amount to enter. Copy the finished"
-        " rows — including column B (Description) — into the Expenses tab (or Income tab for deposits/paychecks),"
-        " matching them to that tab's Description column: this is what lets column D recognize the same transaction"
-        " next time. Then delete the pasted rows here so this stays a scratch area for the next import.",
+        "4. Column D (Vendor) tries to auto-fill itself from any earlier row in this tab with the exact same bank"
+        " description — if it's blank (new or slightly different wording), pick a Vendor from the dropdown."
+        " Category (E) then auto-fills from that vendor's default category; override it if needed.",
+        "That's it — every row here counts immediately in the Dashboard KPIs, charts, Budget, and Vendor totals."
+        " There's no copy step: this tab IS the ledger for bank-derived transactions, the same way Expenses/Income"
+        " are the ledger for anything you enter by hand. Don't delete rows after importing — deleting a row removes"
+        " that transaction from every report.",
         "Note: the auto-fill in step 4 only recognizes an EXACT repeat of a description string. Recurring bills and"
         " subscriptions usually post with identical text every time, so those learn fast. If your bank appends a"
         " unique date or reference number to every line, matching won't catch it — you'll just pick the vendor"
         " again, same as the first time.",
+        "Note: the Dashboard's 'Top Expenses' and 'Recent Transactions' widgets only look at the Expenses tab"
+        " (a limitation of ranking individual transactions across two separate tables) — everything else (KPIs,"
+        " Budget, Vendor totals, charts, Cut-Back Analyzer) includes this tab.",
     ]
     for i, s in enumerate(steps):
         rr = r + i
@@ -63,7 +68,7 @@ def build_bank_import(wb):
 
     r2 = toggle_row + 2
     r2 = style_section_header(ws, r2, 1,
-        "Paste your CSV's Date / Description / Amount into columns A-C — Vendor (D) auto-fills from past imports when it recognizes the description",
+        "Paste your CSV's Date / Description / Amount into columns A-C — Vendor (D) auto-fills from earlier rows when it recognizes the description",
         span=11)
     headers = ["Date", "Description", "Amount", "VendorName", "CategoryName", "AccountName",
                "PaymentMethod", "TransactionType", "AbsAmount", "NeedWantFlag", "Notes"]
@@ -84,12 +89,15 @@ def build_bank_import(wb):
         ws.cell(row=rr, column=1).number_format = DATE_FMT
         ws.cell(row=rr, column=3).number_format = CUR_FMT
         # Vendor "remembers" prior imports: exact-match this row's raw Description against Description
-        # values already recorded in Fact_Expenses / Fact_Income, and reuse whatever vendor/source was
-        # picked last time. Plain scalar INDEX/MATCH — no arrays, so it's safe in any Excel version.
-        ws.cell(row=rr, column=4,
-                value=(f'=IF($B{rr}="","",'
-                       f'IFERROR(INDEX(Fact_Expenses[VendorName],MATCH($B{rr},Fact_Expenses[Description],0)),'
-                       f'IFERROR(INDEX(Fact_Income[SourceName],MATCH($B{rr},Fact_Income[Description],0)),"")))'))
+        # text in EARLIER rows of this same table only (never itself or later rows — that would create a
+        # circular reference, since this column feeds Fact-level totals that this same formula could see).
+        # Plain scalar INDEX/MATCH over a growing range — no arrays, safe in any Excel version.
+        if rr == fr:
+            ws.cell(row=rr, column=4, value='=""')
+        else:
+            ws.cell(row=rr, column=4,
+                    value=(f'=IF($B{rr}="","",'
+                           f'IFERROR(INDEX($D${fr}:$D${rr-1},MATCH($B{rr},$B${fr}:$B${rr-1},0)),""))'))
         # Category auto-suggested from the picked Vendor's default category (plain, non-array INDEX/MATCH)
         ws.cell(row=rr, column=5,
                 value=(f'=IFERROR(INDEX(Dim_Category[CategoryName],MATCH('
@@ -102,8 +110,6 @@ def build_bank_import(wb):
         ws.cell(row=rr, column=9, value=f'=IF($C{rr}="","",ABS($C{rr}))')
         ws.cell(row=rr, column=9).number_format = CUR_FMT
 
-    for col_letter in ("D", "E", "F", "G", "J"):
-        pass  # dropdowns added below; nothing hidden here since user actively edits these columns
     add_list_validation(ws, f"D{fr}:D{lr}", "=VendorNameList")
     add_list_validation(ws, f"E{fr}:E{lr}", "=ExpenseCategoryList")
     add_list_validation(ws, f"F{fr}:F{lr}", "=AccountNameList")

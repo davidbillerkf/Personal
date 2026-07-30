@@ -29,7 +29,7 @@ def build_budget(wb):
 
     r = 9
     r = style_section_header(ws, r, 1,
-        "Category Budgets  —  set MonthlyBudget per category; Actual pulls live from Expenses this month", span=8)
+        "Category Budgets  —  set MonthlyBudget per category; Actual pulls live from Expenses + Bank Import this month", span=8)
     headers = ["CategoryName", "MonthlyBudget", "Actual", "Remaining", "Variance %", "Status", "Progress"]
     data_rows = [[cat, BUDGET_AMOUNTS.get(cat, 100)] + [None] * 5 for cat in EXPENSE_CATEGORIES]
     bud_info = add_table(ws, r, 1, headers, "Budget", data_rows,
@@ -39,7 +39,8 @@ def build_budget(wb):
         ws.cell(row=rr, column=2).number_format = CUR_FMT
         ws.cell(row=rr, column=2).font = f(10, color=BLUE_ACCENT)
         ws.cell(row=rr, column=3,
-                value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],$A{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)')
+                value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],$A{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],$A{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
         ws.cell(row=rr, column=3).number_format = CUR_FMT
         ws.cell(row=rr, column=4, value=f"=$B{rr}-$C{rr}")
         ws.cell(row=rr, column=4).number_format = CUR_FMT

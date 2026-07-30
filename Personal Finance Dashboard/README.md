@@ -34,31 +34,37 @@ Personal Finance Dashboard/
 
 ### Option A — the Bank Import tab (works immediately, no setup)
 
+**Bank Import is a permanent ledger, just like Expenses/Income — not a scratch area.** Every
+row you paste there counts immediately in the Dashboard's KPIs, charts, Budget, and Vendor
+totals. There's no copy-elsewhere step, and you should never delete a row after importing it —
+that would remove that transaction from every report.
+
 1. Export a CSV of transactions from your bank or credit card's website (usually
    *Accounts ▸ Download/Export*).
 2. Open that CSV and copy its **Date**, **Description**, and **Amount** columns.
 3. Paste them into columns A–C of the `BankImportRaw` table on the **Bank Import** tab (paste
-   *values only* — Home ▸ Paste ▸ Values — into the first blank row under the header).
+   *values only* — Home ▸ Paste ▸ Values — into the first blank row under the last used row,
+   never over existing rows).
 4. Set **Sign Convention** near the top of the tab to match your export (most bank/debit
    exports show purchases as negative numbers; most credit-card exports show charges as
    positive numbers — check one row against your real statement to confirm).
 5. Column D (**VendorName**) tries to auto-fill itself first — it remembers, exact match only,
-   any past import where you already picked a vendor for that identical description text. If
-   it's blank, pick a **Vendor** from the dropdown. **Category** (column E) then auto-fills from
-   that vendor's default category — override it if it's wrong, and add new vendors to
-   `Dim_Vendor` on the **Vendors** tab as they come up.
-6. Column H tells you **Expense** or **Income**, column I gives the positive **AbsAmount**.
-   Copy the finished rows — **including column B (Description)** — into the **Expenses** tab
-   (or **Income** tab for paychecks/deposits), lining Description up with that tab's Description
-   column. That's what lets column D recognize the same transaction automatically next time.
-   Then clear the pasted rows on Bank Import so it stays a clean scratch area for your next
-   import.
+   any *earlier row in this same tab* with that identical description text. If it's blank, pick
+   a **Vendor** from the dropdown. **Category** (column E) then auto-fills from that vendor's
+   default category — override it if it's wrong, and add new vendors to `Dim_Vendor` on the
+   **Vendors** tab as they come up.
 
-This works the moment you open the file — no Power Query setup required. **The auto-fill in
-step 5 is an exact text match on the description**, so it works well for recurring bills and
-subscriptions that post with identical wording every time. If your bank appends a unique date
-or reference number to every line, it won't match — you'll just pick the vendor again, the same
-as the first time.
+That's it — column H tells you Expense or Income and column I gives the positive amount, and
+both already feed every report. This works the moment you open the file — no Power Query setup
+required. **The auto-fill in step 5 is an exact text match on the description**, so it works
+well for recurring bills and subscriptions that post with identical wording every time. If your
+bank appends a unique date or reference number to every line, it won't match — you'll just pick
+the vendor again, the same as the first time.
+
+**Known scope limit**: the Dashboard's *Top Expenses* and *Recent Transactions* widgets only
+look at the Expenses tab — ranking individual transactions across two separate tables isn't
+something plain formulas do robustly. Every aggregate (KPIs, Budget by category, Vendor totals,
+the 13-month trend charts, the Cut-Back Analyzer) includes Bank Import.
 
 ### Option B — Power Query (optional, for hands-off recurring imports)
 
