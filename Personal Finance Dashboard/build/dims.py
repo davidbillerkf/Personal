@@ -23,10 +23,6 @@ def build_settings(wb):
         ("Last Month End", "=EOMONTH(TodayDate,-1)", "LastMonthEnd"),
         ("Current Year Start", "=DATE(YEAR(TodayDate),1,1)", "CurYearStart"),
         ("Current Year End", "=DATE(YEAR(TodayDate),12,31)", "CurYearEnd"),
-        ("Last Year Start", "=DATE(YEAR(TodayDate)-1,1,1)", "LastYearStart"),
-        ("Last Year End", "=DATE(YEAR(TodayDate)-1,12,31)", "LastYearEnd"),
-        ("7 Days From Today", "=TodayDate+7", "SevenDaysOut"),
-        ("30 Days From Today", "=TodayDate+30", "ThirtyDaysOut"),
     ]
     named_cells = {}
     for i, (label, formula, name) in enumerate(labels):
@@ -42,17 +38,14 @@ def build_settings(wb):
 
     r2 = style_section_header(ws, r2 + 1, 1, "Dim_PaymentMethod", span=5)
     pm_headers = ["PaymentMethodID", "MethodName"]
-    pm_info = add_table(ws, r2, 1, pm_headers, "Dim_PaymentMethod", sd.PAYMENT_METHODS, col_widths=[16, 20])
+    pm_rows = [(1, "Credit Card"), (2, "Debit Card"), (3, "Cash"), (4, "ACH"), (5, "Check")]
+    pm_info = add_table(ws, r2, 1, pm_headers, "Dim_PaymentMethod", pm_rows, col_widths=[16, 20])
     r3 = pm_info["end_row"] + 2
 
-    r3 = style_section_header(ws, r3, 1, "Controlled Vocabulary Lists (used for data-validation dropdowns)", span=5)
+    r3 = style_section_header(ws, r3 + 1, 1, "Controlled Vocabulary Lists (used for data-validation dropdowns)", span=5)
     lists = {
         "List_YesNo": ["Yes", "No"],
         "List_NeedWant": ["Need", "Want"],
-        "List_Frequency": ["Weekly", "Bi-Weekly", "Monthly", "Quarterly", "Semi-Annual", "Annual", "One-Time"],
-        "List_BillStatus": ["Paid", "Unpaid", "Overdue", "Scheduled"],
-        "List_Priority": ["High", "Medium", "Low"],
-        "List_KeepFlag": ["Yes", "No", "Evaluate"],
     }
     col = 1
     start_row = r3
@@ -66,23 +59,6 @@ def build_settings(wb):
         last = start_row + len(values)
         list_ranges[name] = f"Settings!${get_column_letter(col)}${first}:${get_column_letter(col)}${last}"
         col += 1
-    ws.column_dimensions["F"].width = 14
-    ws.column_dimensions["G"].width = 14
-    ws.column_dimensions["H"].width = 16
-    ws.column_dimensions["I"].width = 16
-    ws.column_dimensions["J"].width = 14
-    ws.column_dimensions["K"].width = 14
-
-    # Theme note
-    theme_row = start_row + 10
-    style_section_header(ws, theme_row, 1, "Design Theme", span=5)
-    theme_notes = [
-        ("Header Navy", "#0B1F3A"), ("Positive Green", "#15803D"), ("Negative Red", "#B91C1C"),
-        ("Warning Orange", "#C2650B"), ("Accent Blue", "#2563EB"), ("Card Background", "#FFFFFF"),
-    ]
-    for i, (k, v) in enumerate(theme_notes):
-        ws.cell(row=theme_row + 1 + i, column=1, value=k).font = f(10)
-        ws.cell(row=theme_row + 1 + i, column=2, value=v).font = f(10)
 
     for name, ref in named_cells.items():
         wb.defined_names[name] = DefinedName(name, attr_text=ref)
@@ -96,9 +72,9 @@ def build_settings(wb):
 
 
 def build_dim_date(wb):
-    """Hidden helper sheet: Dim_Date, DateID = INT(date serial). 2023-01-01 .. 2030-12-31."""
+    """Hidden helper sheet: Dim_Date, DateID = INT(date serial). 2025-2027."""
     ws = wb.create_sheet("Dim_Date")
-    headers = ["DateID", "Date", "Day", "Week", "Month", "MonthNumber", "Quarter", "Year", "FiscalYear"]
+    headers = ["DateID", "Date", "Month", "MonthNumber", "Quarter", "Year"]
     for j, h in enumerate(headers):
         c = ws.cell(row=1, column=1 + j, value=h)
         c.font = f(10, bold=True, color=WHITE)
@@ -107,23 +83,18 @@ def build_dim_date(wb):
     end = dt.date(2027, 12, 31)
     n_days = (end - start).days + 1
     row = 2
-    cur = start
-    # Write in bulk for performance
     for i in range(n_days):
-        this_date = cur + dt.timedelta(days=i)
+        this_date = start + dt.timedelta(days=i)
         r = row + i
         ws.cell(row=r, column=1, value=f"=INT(B{r})")
         dc = ws.cell(row=r, column=2, value=this_date)
         dc.number_format = DATE_FMT
-        ws.cell(row=r, column=3, value=f'=TEXT(B{r},"ddd")')
-        ws.cell(row=r, column=4, value=f"=ISOWEEKNUM(B{r})")
-        ws.cell(row=r, column=5, value=f'=TEXT(B{r},"mmm")')
-        ws.cell(row=r, column=6, value=f"=MONTH(B{r})")
-        ws.cell(row=r, column=7, value=f"=ROUNDUP(MONTH(B{r})/3,0)")
-        ws.cell(row=r, column=8, value=f"=YEAR(B{r})")
-        ws.cell(row=r, column=9, value=f"=YEAR(B{r})")
+        ws.cell(row=r, column=3, value=f'=TEXT(B{r},"mmm")')
+        ws.cell(row=r, column=4, value=f"=MONTH(B{r})")
+        ws.cell(row=r, column=5, value=f"=ROUNDUP(MONTH(B{r})/3,0)")
+        ws.cell(row=r, column=6, value=f"=YEAR(B{r})")
     end_row = row + n_days - 1
-    ref = f"A1:I{end_row}"
+    ref = f"A1:F{end_row}"
     tab = Table(displayName="Dim_Date", ref=ref)
     tab.tableStyleInfo = TableStyleInfo(name="TableStyleMedium9", showRowStripes=True)
     ws.add_table(tab)
@@ -136,29 +107,20 @@ def build_categories(wb):
     style_sheet_title(ws, "Categories", span_cols=6)
     ws.sheet_view.showGridLines = False
     ws.column_dimensions["A"].width = 14
-    ws.column_dimensions["B"].width = 22
-    ws.column_dimensions["C"].width = 16
-    ws.column_dimensions["D"].width = 14
-    ws.column_dimensions["E"].width = 16
+    ws.column_dimensions["B"].width = 24
+    ws.column_dimensions["C"].width = 14
+    ws.column_dimensions["D"].width = 16
 
-    r = style_section_header(ws, 4, 1, "Dim_Category  —  add a row here to make a new category available everywhere", span=5)
-    cat_info = add_table(ws, r, 1, ["CategoryID", "CategoryName", "ParentCategory", "CategoryType", "EssentialCategory"],
-                          "Dim_Category", sd.CATEGORIES, col_widths=[12, 22, 16, 14, 16])
-    r2 = cat_info["end_row"] + 3
-    r2 = style_section_header(ws, r2, 1, "Dim_Subcategory  —  CategoryID links each subcategory to its parent category above", span=5)
-    sub_info = add_table(ws, r2, 1, ["SubcategoryID", "CategoryID", "SubcategoryName"],
-                          "Dim_Subcategory", sd.SUBCATEGORIES, col_widths=[14, 12, 24])
+    r = style_section_header(ws, 4, 1, "Dim_Category  —  add a row here to make a new category available everywhere", span=4)
+    cat_info = add_table(ws, r, 1, ["CategoryID", "CategoryName", "CategoryType", "EssentialCategory"],
+                          "Dim_Category", sd.CATEGORIES, col_widths=[12, 24, 14, 16])
 
-    # Named ranges for dropdown lists — structured references so newly added rows
-    # (typed into the blank row directly below the table) appear automatically.
     wb.defined_names["CategoryNameList"] = DefinedName(
         "CategoryNameList", attr_text="Dim_Category[CategoryName]")
     wb.defined_names["ExpenseCategoryList"] = DefinedName(
         "ExpenseCategoryList", attr_text="Dim_Category[CategoryName]")
-    wb.defined_names["SubcategoryNameList"] = DefinedName(
-        "SubcategoryNameList", attr_text="Dim_Subcategory[SubcategoryName]")
     ws.sheet_properties.tabColor = "6B7280"
-    return {"cat_info": cat_info, "sub_info": sub_info}
+    return {"cat_info": cat_info}
 
 
 def build_vendors(wb):
@@ -168,21 +130,22 @@ def build_vendors(wb):
     ws.column_dimensions["A"].width = 12
     ws.column_dimensions["B"].width = 26
     ws.column_dimensions["C"].width = 18
-    ws.column_dimensions["D"].width = 16
+    ws.column_dimensions["D"].width = 15
+    ws.column_dimensions["E"].width = 13
 
-    r = style_section_header(ws, 4, 1, "Dim_Vendor  —  add a row here to make a new vendor available in Expenses", span=6)
-    ven_info = add_table(ws, r, 1, ["VendorID", "VendorName", "VendorType", "DefaultCategoryID",
-                                     "CurMonthSpend", "YTDSpend"],
+    r = style_section_header(ws, 4, 1, "Dim_Vendor  —  add a row here to make a new vendor available in Expenses", span=5)
+    ven_info = add_table(ws, r, 1, ["VendorID", "VendorName", "DefaultCategoryID", "CurMonthSpend", "YTDSpend"],
                           "Dim_Vendor", [list(v) + [None, None] for v in sd.VENDORS],
-                          col_widths=[12, 26, 18, 18, 15, 13])
+                          col_widths=[12, 26, 18, 15, 13])
     fr, lr = ven_info["first_data_row"], ven_info["end_row"]
     for rr in range(fr, lr + 1):
-        ws.cell(row=rr, column=5,
+        ws.cell(row=rr, column=4,
                 value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)')
-        ws.cell(row=rr, column=5).number_format = CUR_FMT
-        ws.cell(row=rr, column=6,
+        ws.cell(row=rr, column=4).number_format = CUR_FMT
+        ws.cell(row=rr, column=5,
                 value=f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurYearStart,Fact_Expenses[Date],"<="&CurYearEnd)')
-        ws.cell(row=rr, column=6).number_format = CUR_FMT
+        ws.cell(row=rr, column=5).number_format = CUR_FMT
+    ws.column_dimensions["C"].hidden = True
     wb.defined_names["VendorNameList"] = DefinedName(
         "VendorNameList", attr_text="Dim_Vendor[VendorName]")
     ws.sheet_properties.tabColor = "6B7280"
@@ -194,26 +157,22 @@ def build_accounts(wb):
     style_sheet_title(ws, "Accounts", span_cols=6)
     ws.sheet_view.showGridLines = False
     ws.column_dimensions["A"].width = 12
-    ws.column_dimensions["B"].width = 24
+    ws.column_dimensions["B"].width = 20
     ws.column_dimensions["C"].width = 16
-    ws.column_dimensions["D"].width = 20
-    ws.column_dimensions["E"].width = 16
+    ws.column_dimensions["D"].width = 16
 
-    r = style_section_header(ws, 4, 1, "Dim_Account  —  add a row here to make a new account available everywhere", span=5)
-    acc_info = add_table(ws, r, 1, ["AccountID", "AccountName", "AccountType", "Institution", "Balance"],
-                          "Dim_Account", sd.ACCOUNTS, col_widths=[12, 24, 16, 20, 16],
-                          number_formats={4: CUR_FMT})
+    r = style_section_header(ws, 4, 1, "Dim_Account  —  add a row here to make a new account available everywhere", span=4)
+    acc_info = add_table(ws, r, 1, ["AccountID", "AccountName", "AccountType", "Balance"],
+                          "Dim_Account", sd.ACCOUNTS, col_widths=[12, 20, 16, 16],
+                          number_formats={3: CUR_FMT})
     for rr in range(acc_info["first_data_row"], acc_info["end_row"] + 1):
-        ws.cell(row=rr, column=5).number_format = CUR_FMT
-        ws.cell(row=rr, column=5).font = f(10, color=BLUE_ACCENT)
+        ws.cell(row=rr, column=4).number_format = CUR_FMT
+        ws.cell(row=rr, column=4).font = f(10, color=BLUE_ACCENT)
 
     r2 = acc_info["end_row"] + 3
-    r2 = style_section_header(ws, r2, 1, "Account Totals", span=5)
-    labels = [("Total Cash (Checking + Savings)", "Checking,Savings"),
-              ("Total Credit Card Debt", "Credit Card"),
-              ("Total Investment Accounts", "Brokerage,Retirement")]
+    r2 = style_section_header(ws, r2, 1, "Account Totals", span=4)
     ws.cell(row=r2, column=1, value="Total All Accounts").font = f(10, bold=True)
-    ws.cell(row=r2, column=2, value=f"=SUM(Dim_Account[Balance])").font = f(10, bold=True)
+    ws.cell(row=r2, column=2, value="=SUM(Dim_Account[Balance])").font = f(10, bold=True)
     ws.cell(row=r2, column=2).number_format = CUR_FMT
 
     wb.defined_names["AccountNameList"] = DefinedName(

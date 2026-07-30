@@ -1,48 +1,55 @@
 # Changelog
 
-All notable changes to the Personal Finance Intelligence Dashboard are documented here.
+All notable changes to the Personal Finance Planner are documented here.
+
+## [2.0.0] - 2026-07-29
+
+### Changed — simplified to a lean personal planner
+- Reduced from 23 sheets to 13 (11 visible + 2 hidden helpers), per user request to simplify.
+- Removed: Debt, Investments, Bills, Subscriptions, Net Worth, Monthly Reports, Annual Reports,
+  Cash Flow Forecast, Financial Health Score, Data Model tab, README tab (key points folded
+  into Data Entry).
+- Income simplified to Payroll (Dim_Source now just "Employer Payroll Inc" / "Other").
+- Expenses simplified to a flat category list (no subcategories): Mortgage, Utilities, Car,
+  Groceries, Insurance, Healthcare, Dining & Entertainment, Personal Care, Shopping,
+  Miscellaneous.
+- Savings promoted to its own top-level tab (goals + transfers + progress + KPIs), no longer
+  bundled under a "Savings Goals" tab alongside Debt/Investments.
+- Dashboard trimmed to 8 KPIs and 5 charts (Income vs Expenses, Spending Breakdown, Spending
+  Trend, Savings Growth, Budget Performance) matching the remaining data; Cut-Back Analyzer
+  simplified to categories that still exist (Dining & Entertainment, Shopping, Personal Care,
+  Non-Essential Wants).
+
+### Added
+- **Bank Import tab**: paste Date/Description/Amount from a bank/credit-card CSV export
+  directly into a staging table; pick a Vendor per row and Category auto-suggests from that
+  vendor's default category; a Sign Convention toggle splits Expense vs Income by the amount's
+  sign; ready-to-copy AbsAmount column. Works immediately, no Power Query setup required.
+- "Where your data lives" guidance in the Data Entry tab and README (data is stored entirely
+  inside the workbook's Excel Tables; flags the git-repo privacy consideration for real data).
+
+### Fixed
+- A layout bug where the Dashboard's "Cut-Back Analyzer" section header overwrote the last row
+  of the "Budget Status" widget when the expense category count differed from the "Recent
+  Transactions" widget's fixed row count; the Cut-Back Analyzer's start row is now computed from
+  the taller of the two widgets above it.
 
 ## [1.0.0] - 2026-07-29
 
 ### Added
-- Initial release: 23-sheet workbook (21 visible + 2 hidden helper sheets) built on a star
-  schema data model.
-- Dimension tables: `Dim_Category`, `Dim_Subcategory`, `Dim_Vendor`, `Dim_Account`,
-  `Dim_PaymentMethod`, `Dim_Source`, `Dim_Subscription`, `Dim_Debt`, `Dim_Investment`,
-  `Dim_Goal`, and a hidden `Dim_Date` (2025-01-01 through 2027-12-31).
-- Fact tables: `Fact_Income`, `Fact_Expenses`, `Fact_Bills`, `Fact_DebtPayments`,
-  `Fact_Investments`, `Fact_SavingsTransfers`.
-- Dashboard with 12 live KPI cards, 8 charts (Income vs Expenses, Spending Breakdown, Spending
-  Trend, Net Worth Growth, Savings Growth, Budget Performance, Debt Paydown, Investment
-  Allocation), and widgets (Upcoming Bills, Top Expenses, Largest Vendors, Largest Categories,
-  Behavior Metrics, Budget Status, Recent Transactions, Cut-Back Analyzer).
-- Budget tab with category-level Actual vs Budget, variance, status (Under/Near/Over), and
-  progress data bars.
-- Bills tab with upcoming/overdue KPI rollups and due-date conditional formatting.
-- Debt tab with Snowball and Avalanche payoff-order comparisons.
-- Savings Goals tab with live progress %, projected completion date per goal.
-- Investments tab with market value, gain/loss, and asset-class allocation.
-- Net Worth tab with assets/liabilities breakdown and a 13-month trend history.
-- Monthly Reports and Annual Reports tabs (formula-driven, PivotTable-equivalent summaries).
-- Cash Flow Forecast: 12-month rolling projection with negative-cash-flow warnings.
-- Financial Health Score: weighted 0–100 composite across 10 factors, rating, and
-  recommendations.
-- Data Model tab documenting the star schema and all table relationships.
-- Data Entry and README tabs with an in-workbook quick-start guide.
-- Settings tab with system date anchors, controlled-vocabulary dropdown lists, and the
-  Dim_PaymentMethod table.
-- ~13 months of sample/demo transactions across all fact tables so every chart, KPI, and
-  report renders real output immediately.
-- Starter Power Query M-code (`PowerQuery/`) for cleaning recurring bank-export CSVs.
+- Initial release: 23-sheet workbook built on a star schema data model (fact tables for
+  Income/Expenses/Bills/Debt Payments/Investments/Savings Transfers; dimension tables for
+  Category/Subcategory/Vendor/Account/Payment Method/Debt/Investment/Goal/Subscription).
+- Dashboard with 12 KPIs, 8 charts, and widgets; Budget; Bills; Debt (Snowball/Avalanche); 
+  Savings Goals; Investments; Net Worth; Monthly/Annual Reports; Cash Flow Forecast; Financial
+  Health Score; Data Model documentation tab.
+- ~13 months of sample/demo transactions; starter Power Query M-code for bank-export cleanup.
 
 ### Known limitations
 - Automated LibreOffice-based formula recalculation could not be run in the build sandbox due
   to a pre-existing environment defect (LibreOffice's type-detection subsystem fails on all
   documents, including its own bundled samples). Formulas were manually reviewed instead; open
-  in Excel and press Ctrl+Alt+F9 on first use.
+  in Excel and press Ctrl+Alt+F9 on first use. This remains true for 2.0.0.
 - No native PivotTables or Power Pivot Data Model are included, since those are authored inside
   the Excel application itself and cannot be generated by an external script — equivalent
-  formula-driven reports are provided instead (see README).
-- The Expense/Bill category dropdown lists both expense and income categories from the shared
-  `Dim_Category` table (needed so one dimension table serves both Fact_Expenses and
-  Fact_Income); pick the appropriate one for the transaction type.
+  formula-driven reports are provided instead.

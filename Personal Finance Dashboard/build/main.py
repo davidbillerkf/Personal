@@ -8,14 +8,13 @@ import facts2
 import reports
 import dashboard
 import misc
+import bank_import
 
 OUT = "/home/user/Personal/Personal Finance Dashboard/Personal Finance Intelligence Dashboard.xlsx"
 
 SHEET_ORDER = [
-    "Dashboard", "Data Entry", "Income", "Expenses", "Categories", "Vendors", "Accounts",
-    "Budget", "Bills", "Subscriptions", "Debt", "Savings Goals", "Investments", "Net Worth",
-    "Monthly Reports", "Annual Reports", "Cash Flow Forecast", "Financial Health",
-    "Data Model", "Settings", "README", "Dim_Date", "ChartData",
+    "Dashboard", "Data Entry", "Bank Import", "Income", "Expenses", "Savings", "Budget",
+    "Categories", "Vendors", "Accounts", "Settings", "Dim_Date", "ChartData",
 ]
 
 
@@ -31,33 +30,21 @@ def main():
 
     facts1.build_income(wb)
     facts1.build_expenses(wb)
-    bill_ctx = facts1.build_bills(wb)
-    facts1.build_subscriptions(wb)
 
-    facts2.build_debt(wb)
-    facts2.build_savings_goals(wb)
-    inv_ctx = facts2.build_investments(wb)
-    nw_ctx = facts2.build_net_worth(wb)
+    facts2.build_savings(wb)
 
     bud_ctx = reports.build_budget(wb)
-    mr_ctx = reports.build_monthly_reports(wb)
-    reports.build_annual_reports(wb)
-    reports.build_cash_flow_forecast(wb)
-    reports.build_financial_health(wb)
+
+    bank_import.build_bank_import(wb)
 
     cd_ctx = dashboard.build_chartdata(wb)
     dash_ctx = {
         "chartdata": cd_ctx,
         "bud_info": bud_ctx["bud_info"],
-        "nw_info": nw_ctx,
-        "inv_alloc": {"start": inv_ctx["alloc_start"], "end": inv_ctx["alloc_end"]},
-        "top10_start": mr_ctx["top10_start"],
     }
     dashboard.build_dashboard(wb, dash_ctx)
 
     misc.build_data_entry(wb)
-    misc.build_data_model(wb)
-    misc.build_readme_sheet(wb)
 
     # Reorder sheets into the spec-defined order
     by_title = {ws.title: ws for ws in wb.worksheets}
