@@ -22,11 +22,17 @@ def build_bank_import(wb):
         " table below (the first blank row right under the header row) — paste values only (Home > Paste > Values)"
         " so formatting doesn't fight the table.",
         "3. Set 'Sign Convention' below to match how your export shows amounts (see the dropdown note).",
-        "4. For each row, pick a Vendor from the dropdown in column D — Category (E) auto-fills from that vendor's"
-        " default category; override it if needed.",
+        "4. Column D (Vendor) tries to auto-fill itself from any past import where you picked a vendor for that"
+        " exact same bank description — if it's blank (new or slightly different wording), pick a Vendor from the"
+        " dropdown. Category (E) then auto-fills from that vendor's default category; override it if needed.",
         "5. Column H tells you Expense or Income and column I gives the positive amount to enter. Copy the finished"
-        " rows (Date, Vendor, Category, Account, Payment Method, AbsAmount, Notes) into the Expenses tab (or Income"
-        " tab for deposits/paychecks), then delete the pasted rows here so this stays a scratch area for the next import.",
+        " rows — including column B (Description) — into the Expenses tab (or Income tab for deposits/paychecks),"
+        " matching them to that tab's Description column: this is what lets column D recognize the same transaction"
+        " next time. Then delete the pasted rows here so this stays a scratch area for the next import.",
+        "Note: the auto-fill in step 4 only recognizes an EXACT repeat of a description string. Recurring bills and"
+        " subscriptions usually post with identical text every time, so those learn fast. If your bank appends a"
+        " unique date or reference number to every line, matching won't catch it — you'll just pick the vendor"
+        " again, same as the first time.",
     ]
     for i, s in enumerate(steps):
         rr = r + i
@@ -57,7 +63,8 @@ def build_bank_import(wb):
 
     r2 = toggle_row + 2
     r2 = style_section_header(ws, r2, 1,
-        "Paste your CSV's Date / Description / Amount into columns A-C, then set Vendor in D for each row", span=11)
+        "Paste your CSV's Date / Description / Amount into columns A-C — Vendor (D) auto-fills from past imports when it recognizes the description",
+        span=11)
     headers = ["Date", "Description", "Amount", "VendorName", "CategoryName", "AccountName",
                "PaymentMethod", "TransactionType", "AbsAmount", "NeedWantFlag", "Notes"]
     n_rows = 500
@@ -76,6 +83,13 @@ def build_bank_import(wb):
     for rr in range(fr, lr + 1):
         ws.cell(row=rr, column=1).number_format = DATE_FMT
         ws.cell(row=rr, column=3).number_format = CUR_FMT
+        # Vendor "remembers" prior imports: exact-match this row's raw Description against Description
+        # values already recorded in Fact_Expenses / Fact_Income, and reuse whatever vendor/source was
+        # picked last time. Plain scalar INDEX/MATCH — no arrays, so it's safe in any Excel version.
+        ws.cell(row=rr, column=4,
+                value=(f'=IF($B{rr}="","",'
+                       f'IFERROR(INDEX(Fact_Expenses[VendorName],MATCH($B{rr},Fact_Expenses[Description],0)),'
+                       f'IFERROR(INDEX(Fact_Income[SourceName],MATCH($B{rr},Fact_Income[Description],0)),"")))'))
         # Category auto-suggested from the picked Vendor's default category (plain, non-array INDEX/MATCH)
         ws.cell(row=rr, column=5,
                 value=(f'=IFERROR(INDEX(Dim_Category[CategoryName],MATCH('

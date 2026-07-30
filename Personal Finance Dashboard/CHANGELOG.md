@@ -2,6 +2,28 @@
 
 All notable changes to the Personal Finance Planner are documented here.
 
+## [2.0.1] - 2026-07-30
+
+### Fixed
+- **Every dropdown in the workbook was broken.** `add_list_validation` (in `build/common.py`) was
+  writing formula1 values with a leading `=` (e.g. `=VendorNameList`) straight into the raw XML.
+  Excel's `<formula1>` element for data validation must not include that `=` (same rule as a
+  cell's `<f>` formula element) — with it there, Excel silently fails to parse the validation and
+  no dropdown arrow ever renders. Fixed by stripping a leading `=` in the helper, which fixes
+  every dropdown in the workbook (Vendor, Category, Account, Payment Method, Need/Want, Yes/No,
+  Source, Goal name) in one place.
+
+### Added
+- **Bank Import now remembers vendor/category choices.** Added a `Description` column to
+  `Fact_Expenses` and `Fact_Income` so the raw bank/CSV description text persists permanently once
+  you copy a row over from Bank Import. The Bank Import tab's VendorName column now auto-fills
+  from an exact match against that history (`Fact_Expenses[Description]` / `Fact_Income[SourceName]`
+  keyed on `Fact_Income[Description]`) before falling back to a manual dropdown pick — so a
+  recurring bill or subscription with identical description text only needs to be categorized
+  once. Category continues to auto-fill from the resolved vendor's default category as before.
+  Added an "Other Income Source" catch-all row to `Dim_Vendor` so miscellaneous deposits have
+  somewhere to land in the same dropdown.
+
 ## [2.0.0] - 2026-07-29
 
 ### Changed — simplified to a lean personal planner

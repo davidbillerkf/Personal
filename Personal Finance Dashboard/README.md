@@ -42,15 +42,23 @@ Personal Finance Dashboard/
 4. Set **Sign Convention** near the top of the tab to match your export (most bank/debit
    exports show purchases as negative numbers; most credit-card exports show charges as
    positive numbers — check one row against your real statement to confirm).
-5. For each row, pick a **Vendor** from the dropdown in column D. **Category** (column E)
-   auto-fills from that vendor's default category — override it if it's wrong, and add new
-   vendors to `Dim_Vendor` on the **Vendors** tab as they come up.
+5. Column D (**VendorName**) tries to auto-fill itself first — it remembers, exact match only,
+   any past import where you already picked a vendor for that identical description text. If
+   it's blank, pick a **Vendor** from the dropdown. **Category** (column E) then auto-fills from
+   that vendor's default category — override it if it's wrong, and add new vendors to
+   `Dim_Vendor` on the **Vendors** tab as they come up.
 6. Column H tells you **Expense** or **Income**, column I gives the positive **AbsAmount**.
-   Copy the finished rows (Date, Vendor, Category, Account, Payment Method, AbsAmount, Notes)
-   into the **Expenses** tab (or **Income** tab for paychecks/deposits), then clear the pasted
-   rows on Bank Import so it stays a clean scratch area for your next import.
+   Copy the finished rows — **including column B (Description)** — into the **Expenses** tab
+   (or **Income** tab for paychecks/deposits), lining Description up with that tab's Description
+   column. That's what lets column D recognize the same transaction automatically next time.
+   Then clear the pasted rows on Bank Import so it stays a clean scratch area for your next
+   import.
 
-This works the moment you open the file — no Power Query setup required.
+This works the moment you open the file — no Power Query setup required. **The auto-fill in
+step 5 is an exact text match on the description**, so it works well for recurring bills and
+subscriptions that post with identical wording every time. If your bank appends a unique date
+or reference number to every line, it won't match — you'll just pick the vendor again, the same
+as the first time.
 
 ### Option B — Power Query (optional, for hands-off recurring imports)
 

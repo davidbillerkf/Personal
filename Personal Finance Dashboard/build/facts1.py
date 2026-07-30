@@ -6,7 +6,7 @@ import seed_data as sd
 
 def build_income(wb):
     ws = wb.create_sheet("Income")
-    style_sheet_title(ws, "Income", span_cols=10)
+    style_sheet_title(ws, "Income", span_cols=14)
     ws.sheet_view.showGridLines = False
 
     r = style_section_header(ws, 4, 1, "Dim_Source", span=2)
@@ -18,15 +18,16 @@ def build_income(wb):
     r2 = src_info["end_row"] + 3
     r2 = style_section_header(ws, r2, 1,
         "Fact_Income  —  enter each paycheck/deposit here. Dropdowns keep entries consistent; ID columns (hidden) auto-lookup for reporting.",
-        span=13)
+        span=14)
     headers = ["IncomeID", "Date", "SourceName", "SourceID", "CategoryName", "CategoryID",
-               "AccountName", "AccountID", "GrossAmount", "TaxesWithheld", "NetAmount", "RecurringFlag", "Notes"]
+               "AccountName", "AccountID", "GrossAmount", "TaxesWithheld", "NetAmount", "RecurringFlag", "Notes",
+               "Description"]
     data_rows = []
     for row in sd.INCOME_ROWS:
         date_, source, cat, acct, gross, tax, rec, notes = row
-        data_rows.append([None, date_, source, None, cat, None, acct, None, gross, tax, None, rec, notes])
+        data_rows.append([None, date_, source, None, cat, None, acct, None, gross, tax, None, rec, notes, None])
     inc_info = add_table(ws, r2, 1, headers, "Fact_Income", data_rows,
-                          col_widths=[10, 12, 22, 10, 16, 10, 20, 10, 13, 13, 13, 13, 24])
+                          col_widths=[10, 12, 22, 10, 16, 10, 20, 10, 13, 13, 13, 13, 24, 30])
 
     fr, lr = inc_info["first_data_row"], inc_info["end_row"]
     for rr in range(fr, lr + 1):
@@ -54,7 +55,7 @@ def build_income(wb):
 
 def build_expenses(wb):
     ws = wb.create_sheet("Expenses")
-    style_sheet_title(ws, "Expenses", span_cols=14)
+    style_sheet_title(ws, "Expenses", span_cols=16)
     ws.sheet_view.showGridLines = False
 
     r = style_section_header(ws, 4, 1,
@@ -62,14 +63,14 @@ def build_expenses(wb):
         span=16)
     headers = ["ExpenseID", "Date", "VendorName", "VendorID", "CategoryName", "CategoryID",
                "AccountName", "AccountID", "PaymentMethod", "PaymentMethodID",
-               "Amount", "NeedWantFlag", "RecurringFlag", "Notes", "CurMonthAmt"]
+               "Amount", "NeedWantFlag", "RecurringFlag", "Notes", "Description", "CurMonthAmt"]
     data_rows = []
     for row in sd.EXPENSE_ROWS:
         (date_, vendor, cat, acct, pm, amount, nw, rec, notes) = row
         data_rows.append([None, date_, vendor, None, cat, None, acct, None, pm, None,
-                           amount, nw, rec, notes, None])
+                           amount, nw, rec, notes, None, None])
     exp_info = add_table(ws, r, 1, headers, "Fact_Expenses", data_rows,
-                          col_widths=[10, 12, 20, 10, 20, 10, 16, 10, 14, 14, 12, 11, 11, 22, 13])
+                          col_widths=[10, 12, 20, 10, 20, 10, 16, 10, 14, 14, 12, 11, 11, 22, 30, 13])
 
     fr, lr = exp_info["first_data_row"], exp_info["end_row"]
     for rr in range(fr, lr + 1):
@@ -80,10 +81,10 @@ def build_expenses(wb):
         ws.cell(row=rr, column=8, value=f'=IFERROR(INDEX(Dim_Account[AccountID],MATCH($G{rr},Dim_Account[AccountName],0)),"")')
         ws.cell(row=rr, column=10, value=f'=IFERROR(INDEX(Dim_PaymentMethod[PaymentMethodID],MATCH($I{rr},Dim_PaymentMethod[MethodName],0)),"")')
         ws.cell(row=rr, column=11).number_format = CUR_FMT
-        ws.cell(row=rr, column=15,
+        ws.cell(row=rr, column=16,
                 value=f'=IF(AND($B{rr}>=CurMonthStart,$B{rr}<=CurMonthEnd),$K{rr},0)')
-        ws.cell(row=rr, column=15).number_format = CUR_FMT
-    for col_letter in ("D", "F", "H", "J", "O"):
+        ws.cell(row=rr, column=16).number_format = CUR_FMT
+    for col_letter in ("D", "F", "H", "J", "P"):
         ws.column_dimensions[col_letter].hidden = True
 
     buf = 300

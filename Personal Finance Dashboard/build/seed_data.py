@@ -55,6 +55,7 @@ VENDORS = [
     (15, "Amazon", 9),
     (16, "Target", 9),
     (17, "Employer Payroll Inc", 11),
+    (18, "Other Income Source", 12),
 ]
 
 # ---------------- Dim_Account ----------------

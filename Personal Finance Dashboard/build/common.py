@@ -139,6 +139,11 @@ def kpi_card(ws, row, col, label, formula, number_format=CUR_FMT0, width_cols=2,
 
 def add_list_validation(ws, cell_range, formula1, allow_blank=True, error_title="Invalid Entry",
                          error_msg="Please choose a value from the dropdown list."):
+    # Data validation formulas must not carry a leading "=" in the underlying XML (same rule as
+    # cell <f> elements) — a leading "=" makes Excel silently fail to parse it, so no dropdown
+    # arrow ever appears. Strip it here so every caller can still write "=Name" naturally.
+    if formula1.startswith("="):
+        formula1 = formula1[1:]
     dv = DataValidation(type="list", formula1=formula1, allow_blank=allow_blank,
                          showErrorMessage=True, errorTitle=error_title, error=error_msg)
     ws.add_data_validation(dv)
