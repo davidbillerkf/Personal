@@ -2,6 +2,17 @@
 
 All notable changes to the Personal Finance Planner are documented here.
 
+## [2.2.0] - 2026-07-30
+
+### Added
+- Bank Import's TransactionType (column H) now has a third option, **Return**, alongside
+  Expense/Income (still a dropdown you can override the sign-based guess with). A Return
+  reduces that category's and vendor's spend everywhere it's counted — Budget Actual, Vendor
+  CurMonthSpend/YTDSpend, Dashboard's Monthly Expenses KPI, the 13-month trend chart, Need vs
+  Want %, and the Cut-Back Analyzer — instead of counting as income or double-counting as a
+  second expense. Every formula that previously added `BankImportRaw` rows where
+  `TransactionType="Expense"` now also subtracts rows where `TransactionType="Return"`.
+
 ## [2.1.0] - 2026-07-30
 
 ### Changed — Bank Import now feeds every report directly, no copy step

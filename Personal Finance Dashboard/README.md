@@ -54,12 +54,17 @@ that would remove that transaction from every report.
    default category — override it if it's wrong, and add new vendors to `Dim_Vendor` on the
    **Vendors** tab as they come up.
 
-That's it — column H tells you Expense or Income and column I gives the positive amount, and
-both already feed every report. This works the moment you open the file — no Power Query setup
-required. **The auto-fill in step 5 is an exact text match on the description**, so it works
-well for recurring bills and subscriptions that post with identical wording every time. If your
-bank appends a unique date or reference number to every line, it won't match — you'll just pick
-the vendor again, the same as the first time.
+That's it — column H guesses Expense or Income from the amount's sign, and column I gives the
+positive amount; both already feed every report. This works the moment you open the file — no
+Power Query setup required. **The auto-fill in step 5 is an exact text match on the
+description**, so it works well for recurring bills and subscriptions that post with identical
+wording every time. If your bank appends a unique date or reference number to every line, it
+won't match — you'll just pick the vendor again, the same as the first time.
+
+**Refunds/returns**: column H is a dropdown too — if a row is a refund on a previous purchase
+(a return credited back to your card, not a paycheck), change it from Expense/Income to
+**Return**. A Return reduces that category's and vendor's spend everywhere on the Dashboard (it
+does *not* count as income), so a refund doesn't inflate your income or savings rate.
 
 **Known scope limit**: the Dashboard's *Top Expenses* and *Recent Transactions* widgets only
 look at the Expenses tab — ranking individual transactions across two separate tables isn't

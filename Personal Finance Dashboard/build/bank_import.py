@@ -27,6 +27,9 @@ def build_bank_import(wb):
         "4. Column D (Vendor) tries to auto-fill itself from any earlier row in this tab with the exact same bank"
         " description — if it's blank (new or slightly different wording), pick a Vendor from the dropdown."
         " Category (E) then auto-fills from that vendor's default category; override it if needed.",
+        "5. Column H (TransactionType) guesses Expense or Income from the amount's sign — for a refund/return on a"
+        " purchase, change it to Return using the dropdown. A Return reduces that category's and vendor's spend"
+        " (it does NOT count as income), so refunds don't inflate your income or savings rate.",
         "That's it — every row here counts immediately in the Dashboard KPIs, charts, Budget, and Vendor totals."
         " There's no copy step: this tab IS the ledger for bank-derived transactions, the same way Expenses/Income"
         " are the ledger for anything you enter by hand. Don't delete rows after importing — deleting a row removes"
@@ -112,12 +115,15 @@ def build_bank_import(wb):
     add_list_validation(ws, f"E{fr}:E{lr}", "=ExpenseCategoryList")
     add_list_validation(ws, f"F{fr}:F{lr}", "=AccountNameList")
     add_list_validation(ws, f"G{fr}:G{lr}", "=PaymentMethodList")
+    add_list_validation(ws, f"H{fr}:H{lr}", '"Expense,Income,Return"')
     add_list_validation(ws, f"J{fr}:J{lr}", "=List_NeedWant")
 
     ws.conditional_formatting.add(
         f"H{fr}:H{lr}", CellIsRule(operator="equal", formula=['"Expense"'], font=Font(color=RED)))
     ws.conditional_formatting.add(
         f"H{fr}:H{lr}", CellIsRule(operator="equal", formula=['"Income"'], font=Font(color=GREEN)))
+    ws.conditional_formatting.add(
+        f"H{fr}:H{lr}", CellIsRule(operator="equal", formula=['"Return"'], font=Font(color=BLUE_ACCENT)))
     ws.conditional_formatting.add(
         f"D{fr}:D{lr}", FormulaRule(formula=[f'AND($C{fr}<>"",$D{fr}="")'], fill=fill(ORANGE_LIGHT)))
 

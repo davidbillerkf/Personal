@@ -43,7 +43,8 @@ def build_budget(wb):
         ws.cell(row=rr, column=2).font = f(10, color=BLUE_ACCENT)
         ws.cell(row=rr, column=3,
                 value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],$A{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
-                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],$A{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],$A{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'
+                       f'-SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],$A{rr},BankImportRaw[TransactionType],"Return",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
         ws.cell(row=rr, column=3).number_format = CUR_FMT
         ws.cell(row=rr, column=4, value=f"=$B{rr}-$C{rr}")
         ws.cell(row=rr, column=4).number_format = CUR_FMT

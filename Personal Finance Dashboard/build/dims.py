@@ -146,11 +146,13 @@ def build_vendors(wb):
                 value=f'=IFERROR(INDEX(Dim_Category[CategoryID],MATCH($C{rr},Dim_Category[CategoryName],0)),"")')
         ws.cell(row=rr, column=5,
                 value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurMonthStart,Fact_Expenses[Date],"<="&CurMonthEnd)'
-                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'
+                       f'-SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Return",BankImportRaw[Date],">="&CurMonthStart,BankImportRaw[Date],"<="&CurMonthEnd)'))
         ws.cell(row=rr, column=5).number_format = CUR_FMT
         ws.cell(row=rr, column=6,
                 value=(f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[VendorName],$B{rr},Fact_Expenses[Date],">="&CurYearStart,Fact_Expenses[Date],"<="&CurYearEnd)'
-                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurYearStart,BankImportRaw[Date],"<="&CurYearEnd)'))
+                       f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&CurYearStart,BankImportRaw[Date],"<="&CurYearEnd)'
+                       f'-SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[VendorName],$B{rr},BankImportRaw[TransactionType],"Return",BankImportRaw[Date],">="&CurYearStart,BankImportRaw[Date],"<="&CurYearEnd)'))
         ws.cell(row=rr, column=6).number_format = CUR_FMT
     add_list_validation(ws, f"C{fr}:C{lr+50}", "=CategoryNameList")
     ws.column_dimensions["D"].hidden = True
