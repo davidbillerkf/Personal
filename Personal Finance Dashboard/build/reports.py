@@ -4,9 +4,12 @@ import seed_data as sd
 
 EXPENSE_CATEGORIES = [c[1] for c in sd.CATEGORIES if c[2] == "Expense"]
 BUDGET_AMOUNTS = {
-    "Mortgage": 2200, "Utilities": 320, "Car": 250, "Groceries": 650, "Insurance": 300,
-    "Healthcare": 150, "Dining & Entertainment": 200, "Personal Care": 80, "Shopping": 200,
-    "Miscellaneous": 100,
+    "Mortgage": 2200, "Utilities": 300, "Insurance Home": 150, "Car Lease/Finance": 450,
+    "Car Expenses": 150, "Insurance Car": 200, "Gas": 200, "Groceries": 900,
+    "Dining & Restaurants": 250, "Healthcare": 200, "Entertainment": 150, "Personal Care": 100,
+    "Men's Clothing": 75, "Women's Clothing": 100, "Kid's Clothing": 100,
+    "Kid's Accessories": 75, "Gifts": 100, "Toys": 75, "Cleaning Supplies": 50,
+    "Amazon": 150, "Walmart": 100, "Target": 100, "Books": 50, "Legal Fees": 100, "Taxes": 200,
 }
 
 

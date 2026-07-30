@@ -247,8 +247,8 @@ def build_dashboard(wb, ctx):
         return (f'=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[CategoryName],"{cat}",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'
                 f'+SUMIFS(BankImportRaw[AbsAmount],BankImportRaw[CategoryName],"{cat}",BankImportRaw[TransactionType],"Expense",BankImportRaw[Date],">="&EOMONTH(TodayDate,-2)+1,BankImportRaw[Date],"<="&EOMONTH(TodayDate,-1))')
     cba_defs = [
-        ("Dining & Entertainment", cba_category_formula("Dining & Entertainment")),
-        ("Shopping", cba_category_formula("Shopping")),
+        ("Dining & Restaurants", cba_category_formula("Dining & Restaurants")),
+        ("Entertainment", cba_category_formula("Entertainment")),
         ("Personal Care", cba_category_formula("Personal Care")),
         ("Non-Essential Wants (all categories)",
          '=SUMIFS(Fact_Expenses[Amount],Fact_Expenses[NeedWantFlag],"Want",Fact_Expenses[Date],">="&EOMONTH(TodayDate,-2)+1,Fact_Expenses[Date],"<="&EOMONTH(TodayDate,-1))'

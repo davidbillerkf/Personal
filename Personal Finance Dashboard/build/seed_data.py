@@ -1,6 +1,5 @@
-"""Seed / sample data for the simplified Personal Finance Planner workbook.
-All rows here are illustrative demo data the user is expected to replace or delete
-(see README). They exist so charts, KPIs and reports render real output out of the box.
+"""Seed data for the Personal Finance Planner workbook: real Accounts/Categories/Vendors
+supplied by the user, with no sample transactions — a clean slate to start entering into.
 """
 import datetime as dt
 
@@ -23,105 +22,223 @@ def d(y, m, day):
 CATEGORIES = [
     (1, "Mortgage", "Expense", "Yes"),
     (2, "Utilities", "Expense", "Yes"),
-    (3, "Car", "Expense", "Yes"),
-    (4, "Groceries", "Expense", "Yes"),
-    (5, "Insurance", "Expense", "Yes"),
-    (6, "Healthcare", "Expense", "Yes"),
-    (7, "Dining & Entertainment", "Expense", "No"),
-    (8, "Personal Care", "Expense", "No"),
-    (9, "Shopping", "Expense", "No"),
-    (10, "Miscellaneous", "Expense", "No"),
-    (11, "Payroll", "Income", "No"),
-    (12, "Other Income", "Income", "No"),
+    (3, "Insurance Home", "Expense", "Yes"),
+    (4, "Car Lease/Finance", "Expense", "Yes"),
+    (5, "Car Expenses", "Expense", "Yes"),
+    (6, "Insurance Car", "Expense", "Yes"),
+    (7, "Gas", "Expense", "Yes"),
+    (8, "Groceries", "Expense", "Yes"),
+    (9, "Dining & Restaurants", "Expense", "No"),
+    (10, "Healthcare", "Expense", "Yes"),
+    (11, "Entertainment", "Expense", "No"),
+    (12, "Personal Care", "Expense", "No"),
+    (13, "Men's Clothing", "Expense", "No"),
+    (14, "Women's Clothing", "Expense", "No"),
+    (15, "Kid's Clothing", "Expense", "No"),
+    (16, "Kid's Accessories", "Expense", "No"),
+    (17, "Gifts", "Expense", "No"),
+    (18, "Toys", "Expense", "No"),
+    (19, "Cleaning Supplies", "Expense", "No"),
+    (20, "Amazon", "Expense", "No"),
+    (21, "Walmart", "Expense", "No"),
+    (22, "Target", "Expense", "No"),
+    (23, "Books", "Expense", "No"),
+    (24, "Legal Fees", "Expense", "Yes"),
+    (25, "Taxes", "Expense", "Yes"),
+    (26, "Payroll Direct DB", "Income", "No"),
+    (27, "Payroll Cash RB", "Income", "No"),
+    (28, "Payroll Direct RB", "Income", "No"),
 ]
+_CAT_ID = {name: cid for (cid, name, _typ, _ess) in CATEGORIES}
 
 # ---------------- Dim_Vendor ----------------
 # VendorID, VendorName, DefaultCategoryID
+# DefaultCategoryID is None where nothing in the category list above is a confident fit
+# (mainly: schools/yeshivas, shuls/congregations, tzedakah & charity organizations, bank
+# fees/interest line items, home repair, and Zelle transfers — none of these have a matching
+# category yet). Those vendors still work everywhere; they just won't auto-suggest a category
+# in Bank Import until you either pick one manually or add a category that fits.
+_VENDOR_DEFS = [
+    ("99 CENTS OUTLET", None),
+    ("AIRCO MECHANICAL", None),
+    ("AMAZING SAVINGS", None),
+    ("AMAZON", "Amazon"),
+    ("AMAZON PRIME", "Amazon"),
+    ("ASI / PROGRESSIVE INSURANCE", "Insurance Car"),
+    ("BABY DREAMS", "Kid's Accessories"),
+    ("BAIS HASFORIM", "Books"),
+    ("BETH ROCHEL SCHOOL", None),
+    ("BINGO WHOLESALE", "Groceries"),
+    ("BNEI YAKOV YOSEF OF MONSEY", None),
+    ("CAFE CHOCOLAT", "Dining & Restaurants"),
+    ("CAFE CORNER", "Dining & Restaurants"),
+    ("CELL 2 GET", "Utilities"),
+    ("CHAI LIFELINE", None),
+    ("CHURRASKO GRILL", "Dining & Restaurants"),
+    ("CLAIRE'S", "Kid's Accessories"),
+    ("CM WINDOWS & DOORS", None),
+    ("CONG TALMUDEI ISRAEL", None),
+    ("Cong Zwehil Of Monsey", None),
+    ("CONG. BIRKAS SHESH", None),
+    ("CONG. BUILDING EMANUEL", None),
+    ("CONG. KIPAS CHASANIM", None),
+    ("COPE INSTITUTE", None),
+    ("COSTUME CENTRAL", "Toys"),
+    ("CROSSROADS WINE & SPIRITS", "Entertainment"),
+    ("CVS PHARMACY", "Healthcare"),
+    ("DAVE & BUSTERS", "Entertainment"),
+    ("Der Shtiebel", None),
+    ("DOLLAR TREE", None),
+    ("DSW", "Women's Clothing"),
+    ("Eli Meisels Inc", None),
+    ("ERIE INSURANCE", None),
+    ("EVERGREEN KOSHER MARKET", "Groceries"),
+    ("EXXON GAS", "Gas"),
+    ("E-Z PASS", "Car Expenses"),
+    ("EZER YESHIVA SEDER RAFFLE", None),
+    ("FAME CN CENTRAL", None),
+    ("FIVE BELOW", "Toys"),
+    ("FOREIGN TRANSACTION FEE", None),
+    ("FRANKEL'S DESIGNER SHOES", "Women's Clothing"),
+    ("GEICO", "Insurance Car"),
+    ("GOOGLE", None),
+    ("GRAPE WINE & SPIRIT", "Entertainment"),
+    ("H&M", "Women's Clothing"),
+    ("HAVA JAVA", "Dining & Restaurants"),
+    ("HEAVEN SCENT", "Gifts"),
+    ("HIVE DISCOUNT", None),
+    ("IKEA", None),
+    ("INTEREST PAYMENT", None),
+    ("INVITE WITH CLASS", "Gifts"),
+    ("IRS", "Taxes"),
+    ("JOSEPH DANITTI - CUFF & CO", "Gifts"),
+    ("KAYX", None),
+    ("KEREN CHASANIM", None),
+    ("KIDICHIC", "Kid's Clothing"),
+    ("KIDS FIRST PEO", "Healthcare"),
+    ("KRISPY BY GG", "Dining & Restaurants"),
+    ("LATE FEE", None),
+    ("LE BRICK", None),
+    ("LILY & TODD", "Kid's Clothing"),
+    ("LILY AND TODD", "Kid's Clothing"),
+    ("LOWES", None),
+    ("LUIBELLE", "Women's Clothing"),
+    ("LUKOIL", "Gas"),
+    ("LULU KIDS CLOTHING", "Kid's Clothing"),
+    ("MACY'S", "Women's Clothing"),
+    ("MALBISH", None),
+    ("MELT", "Dining & Restaurants"),
+    ("MERKAZ SEFORIM", "Books"),
+    ("METRO BY T-MOBILE", "Utilities"),
+    ("MIDAS - MONSEY", "Car Expenses"),
+    ("Mikes Burger", "Dining & Restaurants"),
+    ("MONSEY GLATT", "Groceries"),
+    ("MONSEY URGENT CARE", "Healthcare"),
+    ("MONSEY WINE & LIQUOR", "Entertainment"),
+    ("MONTHLY SERVICE FEE", None),
+    ("MONTVALE WINE LIQUOR", "Entertainment"),
+    ("MORC INC 8453710211", None),
+    ("MUNCH HEARTY", "Dining & Restaurants"),
+    ("NAME CHEAP", None),
+    ("NEW YORK STATE DMV", "Car Expenses"),
+    ("NEWDAY", None),
+    ("Nissan Auto Lease", "Car Lease/Finance"),
+    ("NOD", None),
+    ("NORDSTROM RACK", "Women's Clothing"),
+    ("NORWICH COMMERCIAL", None),
+    ("NU TREND CLEANERS", "Personal Care"),
+    ("NUMBER BARN", "Utilities"),
+    ("NY STATE TAX", "Taxes"),
+    ("NYS TAX", "Taxes"),
+    ("OHR CHAIM - MIKVA", None),
+    ("OHR CHAIM CHARITY CAMPAIG", None),
+    ("OLYMPIA PITA", "Dining & Restaurants"),
+    ("OORAH", None),
+    ("ORANGE & ROCKLAND", "Utilities"),
+    ("OVERDRAFT FEE", None),
+    ("PHARMACY PLUS", "Healthcare"),
+    ("PIES N FRIES", "Dining & Restaurants"),
+    ("PITA LAND", "Dining & Restaurants"),
+    ("PRIM", None),
+    ("Prime Video", "Entertainment"),
+    ("PURCHASE INTEREST CHARGE", None),
+    ("PYRAMID PLUMBING", None),
+    ("RAILWAY.COM", None),
+    ("ROCKET MORTGAGE", "Mortgage"),
+    ("ROCKLAND KOSHER", "Groceries"),
+    ("SANDERS BAKERY", "Dining & Restaurants"),
+    ("SEASONS EXPRESS", "Groceries"),
+    ("SEPHORA", "Personal Care"),
+    ("SHAWARMA DELIGHT", "Dining & Restaurants"),
+    ("SHELIS IN TOWN SQ", "Dining & Restaurants"),
+    ("SHELL OIL", "Gas"),
+    ("SHOPRITE", "Groceries"),
+    ("SLONIM", None),
+    ("SOCK SHOPPE", None),
+    ("SPARK CAR WASH", "Car Expenses"),
+    ("SPRINKLES", "Dining & Restaurants"),
+    ("SW DESIGNER SHOES", "Women's Clothing"),
+    ("SWADDLES BABY", "Kid's Accessories"),
+    ("SWEET EXPRESSIONS", "Gifts"),
+    ("TALMED TORAH IMREI BINA", None),
+    ("TALMUDEI YISROEL STANISLUV", None),
+    ("TARGET", "Target"),
+    ("TEN YAD KALLAH GEMACH", None),
+    ("THE CHILDRENS PLACE", "Kid's Clothing"),
+    ("THE ROBE GALLERY", None),
+    ("TOIREM.ORG", None),
+    ("TOTTINI", "Kid's Accessories"),
+    ("TOYOTA", "Car Lease/Finance"),
+    ("TOYS 4 U", "Toys"),
+    ("TURTLE BACK ZOO", "Entertainment"),
+    ("TWILIO", None),
+    ("UBER EATS", "Dining & Restaurants"),
+    ("ULTA", "Personal Care"),
+    ("US MOBILE", "Utilities"),
+    ("VEOLIA", "Utilities"),
+    ("WAL-MART", "Walmart"),
+    ("Walmart+ Membership", "Walmart"),
+    ("WEGMANS MONTVALE", "Groceries"),
+    ("WESLEY KOSHER", "Groceries"),
+    ("WESTCHESTER MEDICAL CENTER", "Healthcare"),
+    ("WINE ON 59", "Entertainment"),
+    ("YOFFEE COFFEE", "Dining & Restaurants"),
+    ("Zadarma", "Utilities"),
+    ("Zara", "Women's Clothing"),
+    ("Zelle payment from", None),
+    ("Zelle payment to", None),
+    # Added so Bank Import can auto-categorize payroll deposits the same way it does expenses —
+    # not part of your list, remove the row on the Vendors tab if you don't want it.
+    ("Payroll Direct DB", "Payroll Direct DB"),
+    ("Payroll Cash RB", "Payroll Cash RB"),
+    ("Payroll Direct RB", "Payroll Direct RB"),
+]
 VENDORS = [
-    (1, "Mortgage Lender", 1),
-    (2, "City Electric Co", 2),
-    (3, "Comcast Xfinity", 2),
-    (4, "Verizon Wireless", 2),
-    (5, "Shell Gas Station", 3),
-    (6, "AutoZone", 3),
-    (7, "Whole Foods", 4),
-    (8, "Costco", 4),
-    (9, "State Farm Insurance", 5),
-    (10, "Kaiser Permanente", 6),
-    (11, "Chipotle", 7),
-    (12, "Netflix", 7),
-    (13, "AMC Theatres", 7),
-    (14, "Planet Fitness", 8),
-    (15, "Amazon", 9),
-    (16, "Target", 9),
-    (17, "Employer Payroll Inc", 11),
-    (18, "Other Income Source", 12),
+    (i + 1, name, (_CAT_ID[cat] if cat else None))
+    for i, (name, cat) in enumerate(_VENDOR_DEFS)
 ]
 
 # ---------------- Dim_Account ----------------
 # AccountID, AccountName, AccountType, Balance
 ACCOUNTS = [
-    (1, "Checking", "Checking", 4820.55),
-    (2, "Savings", "Savings", 18250.00),
-    (3, "Credit Card", "Credit Card", -1240.33),
+    (1, "Checking 2833", "Checking", 0),
+    (2, "Savings 5950", "Savings", 0),
+    (3, "Credit Card Sapphire 7750", "Credit Card", 0),
+    (4, "Business Checking 4841", "Checking", 0),
+    (5, "Credit Card Freedom 3361", "Credit Card", 0),
 ]
 
 # ---------------- Dim_Goal ----------------
 # GoalID, GoalName, TargetAmount, TargetDate, Priority
 GOALS = [
     (1, "Emergency Fund", 25000, dt.date(2026, 12, 31), "High"),
-    (2, "Vacation", 6000, dt.date(2027, 6, 1), "Medium"),
-    (3, "New Car", 12000, dt.date(2027, 12, 31), "Medium"),
 ]
 
-# ---------------- Fact_Income (sample, 13 months, Payroll only) ----------------
-# Date, VendorName, CategoryName, AccountName, GrossAmount, TaxesWithheld, RecurringFlag, Notes
+# ---------------- Fact_Income — no sample transactions ----------------
 INCOME_ROWS = []
-for i in range(12, -1, -1):
-    y, m = months_back(i)
-    INCOME_ROWS.append((d(y, m, 1), "Employer Payroll Inc", "Payroll", "Checking", 5100.00, 1224.00, "Yes", "Semi-monthly payroll"))
-    INCOME_ROWS.append((d(y, m, 15), "Employer Payroll Inc", "Payroll", "Checking", 5100.00, 1224.00, "Yes", "Semi-monthly payroll"))
 
-# ---------------- Fact_Expenses (sample) ----------------
-# Vendor, Category, Account, PaymentMethod, Amount, NeedWantFlag, RecurringFlag, Notes
-EXPENSE_TEMPLATE = [
-    ("Mortgage Lender", "Mortgage", "Checking", "ACH", 2150.00, "Need", "Yes", "Monthly mortgage payment"),
-    ("Whole Foods", "Groceries", "Credit Card", "Credit Card", 186.42, "Need", "No", ""),
-    ("Costco", "Groceries", "Credit Card", "Credit Card", 245.10, "Need", "No", "Bulk groceries"),
-    ("Shell Gas Station", "Car", "Credit Card", "Credit Card", 52.30, "Need", "No", "Gas"),
-    ("AutoZone", "Car", "Credit Card", "Credit Card", 38.75, "Need", "No", "Wiper blades / oil"),
-    ("City Electric Co", "Utilities", "Checking", "ACH", 128.60, "Need", "Yes", ""),
-    ("Comcast Xfinity", "Utilities", "Checking", "ACH", 79.99, "Need", "Yes", "Internet"),
-    ("Verizon Wireless", "Utilities", "Checking", "ACH", 95.00, "Need", "Yes", "Mobile phone"),
-    ("State Farm Insurance", "Insurance", "Checking", "ACH", 142.00, "Need", "Yes", "Auto + home insurance"),
-    ("Kaiser Permanente", "Healthcare", "Credit Card", "Credit Card", 45.00, "Need", "No", "Copay"),
-    ("Chipotle", "Dining & Entertainment", "Credit Card", "Credit Card", 14.25, "Want", "No", ""),
-    ("Netflix", "Dining & Entertainment", "Credit Card", "Credit Card", 15.49, "Want", "Yes", "Streaming subscription"),
-    ("AMC Theatres", "Dining & Entertainment", "Credit Card", "Credit Card", 32.00, "Want", "No", ""),
-    ("Planet Fitness", "Personal Care", "Checking", "ACH", 24.99, "Want", "Yes", "Gym membership"),
-    ("Amazon", "Shopping", "Credit Card", "Credit Card", 68.47, "Want", "No", ""),
-    ("Target", "Shopping", "Credit Card", "Credit Card", 54.32, "Want", "No", ""),
-]
-
+# ---------------- Fact_Expenses — no sample transactions ----------------
 EXPENSE_ROWS = []
-import random
-random.seed(42)
-for i in range(11, -1, -1):
-    y, m = months_back(i)
-    for idx, tmpl in enumerate(EXPENSE_TEMPLATE):
-        day = ((idx * 3 + 2) % 27) + 1
-        amount = tmpl[4]
-        jitter = round(amount * random.uniform(-0.08, 0.08), 2) if amount > 20 else 0
-        row = (d(y, m, day), tmpl[0], tmpl[1], tmpl[2], tmpl[3], round(amount + jitter, 2)) + tmpl[5:]
-        EXPENSE_ROWS.append(row)
 
-# ---------------- Fact_SavingsTransfers (sample) ----------------
-# Date, GoalName, AccountName, Amount
+# ---------------- Fact_SavingsTransfers — no sample transactions ----------------
 SAVINGS_TRANSFER_ROWS = []
-for i in range(11, -1, -1):
-    y, m = months_back(i)
-    SAVINGS_TRANSFER_ROWS.append((d(y, m, 3), "Emergency Fund", "Savings", 500.00))
-    if i % 2 == 0:
-        SAVINGS_TRANSFER_ROWS.append((d(y, m, 17), "Vacation", "Savings", 150.00))
-    if i % 3 == 0:
-        SAVINGS_TRANSFER_ROWS.append((d(y, m, 20), "New Car", "Savings", 200.00))
