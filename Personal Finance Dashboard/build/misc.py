@@ -40,6 +40,7 @@ def build_data_entry(wb):
         ("Expenses", "Log every purchase — the most-used tab"),
         ("Savings", "Set goals and log transfers toward them"),
         ("Budget", "Set your monthly budget per category"),
+        ("Trends", "Compare every month, category, and vendor side by side"),
         ("Categories", "Add a new expense/income category"),
         ("Vendors", "Add a new vendor"),
         ("Accounts", "Add a new bank/credit account"),

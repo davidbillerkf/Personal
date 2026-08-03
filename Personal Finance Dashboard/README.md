@@ -29,6 +29,29 @@ Personal Finance Dashboard/
 5. Otherwise, log transactions directly on **Income**, **Expenses**, and **Savings**.
 6. Set your monthly budget per category on **Budget**.
 7. Review **Dashboard** for KPIs, charts, and the Cut-Back Analyzer.
+8. Go to **Trends** to compare every month, category, and vendor side by side.
+
+## Trends — comparing every month, category, and vendor
+
+The **Trends** tab is for looking across your whole history at once, rather than the
+current-month snapshot the Dashboard focuses on:
+
+- **Monthly Summary**: Income, Expenses, Net Savings, and a running Cumulative total for every
+  month from Jan 2024 through Dec 2027, plus a full-history Income vs Expenses chart. (That
+  range is fixed at build time with room to grow — if your data ever runs past Dec 2027, ask to
+  have the range extended.)
+- **Category × Month**: every category's spend, one row each, one column per month, with a
+  color scale so heavy/light months jump out visually.
+- **Category trend**: pick any category from the dropdown and see its month-by-month spend as
+  a line chart.
+- **Vendor Summary**: every vendor — Total (all-time), YTD, Avg Monthly (trailing 12 months),
+  transaction count, and last transaction date. Click any column header's filter arrow to sort
+  (e.g. by Total, to see who you spend the most with).
+- **Vendor trend**: pick any vendor from the dropdown and see its month-by-month spend as a
+  line chart.
+
+Like everywhere else, these combine Expenses/Income (manually entered) with Bank Import
+(bank-derived, with Returns netted out) — nothing is double-counted or left out.
 
 ## Bringing in bank / credit-card transactions
 

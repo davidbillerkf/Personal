@@ -2,6 +2,25 @@
 
 All notable changes to the Personal Finance Planner are documented here.
 
+## [2.3.0] - 2026-08-03
+
+### Added — new Trends tab
+- **Monthly Summary**: Income/Expenses/Net Savings/Cumulative for every month from Jan 2024
+  through Dec 2027 (48 months — fixed range with growth room), plus a full-history Income vs
+  Expenses line chart.
+- **Category × Month matrix**: every category (padded to 60 rows for future growth), one column
+  per month, with a color-scale heatmap.
+- **Category trend picker**: dropdown + line chart for any single category's monthly spend.
+- **Vendor Summary**: every vendor (padded to 220 rows), with Total (all-time), YTD, Avg Monthly
+  (trailing 12 months), transaction count, and last transaction date — sort by clicking a column
+  header.
+- **Vendor trend picker**: dropdown + line chart for any single vendor's monthly spend.
+- All of the above combine Fact_Expenses/Fact_Income with BankImportRaw (netting Returns against
+  Expenses), matching the existing combined-source convention used by the Dashboard/Budget/
+  Vendors totals.
+- Applied directly to the user's in-progress workbook (which already had ~730 real transactions
+  entered) rather than regenerated from the template, so no data was lost.
+
 ## [2.2.0] - 2026-07-30
 
 ### Added

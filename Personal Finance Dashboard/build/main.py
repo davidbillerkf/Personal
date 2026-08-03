@@ -9,11 +9,12 @@ import reports
 import dashboard
 import misc
 import bank_import
+import trends
 
 OUT = "/home/user/Personal/Personal Finance Dashboard/Personal Finance Intelligence Dashboard.xlsx"
 
 SHEET_ORDER = [
-    "Dashboard", "Data Entry", "Bank Import", "Income", "Expenses", "Savings", "Budget",
+    "Dashboard", "Data Entry", "Bank Import", "Income", "Expenses", "Savings", "Budget", "Trends",
     "Categories", "Vendors", "Accounts", "Settings", "Dim_Date", "ChartData",
 ]
 
@@ -43,6 +44,8 @@ def main():
         "bud_info": bud_ctx["bud_info"],
     }
     dashboard.build_dashboard(wb, dash_ctx)
+
+    trends.build_trends(wb)
 
     misc.build_data_entry(wb)
 
